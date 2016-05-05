@@ -30,19 +30,19 @@ def writePage(URL,CHECK,PAGE):
 	f.close()
 
 def checkAllPages():
-	for i in np.arange (10000,2000000,1000):
+	for i in np.arange (1,2500000,1):
 		try:
 			urlHistorique = "http://www.boiteajeux.net/jeux/agr/historique.php?id="+str(i)
 			request = urllib2.Request(urlHistorique)
 			response = urllib2.urlopen(request)
 			page = response.read()
 			soup = BeautifulSoup(page,"lxml")
-			if (len(str(soup.body)) < 2000):
-				print urlHistorique
-			else:
-				print urlHistorique
-				print len(str(soup.body))
-				break
+			if (len(str(soup.body)) >= 2000):
+				print i
+#			else:
+#				print urlHistorique
+#				print len(str(soup.body))
+#				break
 		except Exception as e:
 			print e
 	return 0
