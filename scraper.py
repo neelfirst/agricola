@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import sys
 import urllib2
 from bs4 import BeautifulSoup
 import numpy as np
@@ -13,19 +14,28 @@ def getPage(URL):
 	response.close()
 	return page
 
-#def checkPage(PAGE):
-#	page = PAGE
-#	if page is blank:
-#		return "b-"
-#	if page is abandoned:
-#		return "a-"
-#	if page is incomplete:
-#		return "i-"
-#	else:
-#		return ""
+def checkIfGameIsDone(GAME,HISTORY):
+#	print HISTORY
+	isGameOver = "- GAME OVER -" in GAME
+	hasGivenUp = "gives up!" in HISTORY
+	hasLayaboutEffect = "\"Layabout\" effect" in HISTORY
+	isRound14 = "<td class=\"clHisto\" style=\"text-align:center;vertical-align:middle;font-weight:bold;color:red\">14</td>" in HISTORY
+	numPlayers = HISTORY.count("</div>&nbsp")
+	numFeedings = HISTORY.count("feeding")
+	print "isGameOver = ",isGameOver
+	print "hasGivenUp = ",hasGivenUp
+	print "isRound14 = ",isRound14
+	print "numPlayers*6 = ",numPlayers*6
+	print "numFeedings+hasLayaboutEffect = ",numFeedings+hasLayaboutEffect
+	print "hasLayaboutEffect = ",hasLayaboutEffect
+	if (isRound14 and isGameOver and numPlayers*6 == numFeedings+hasLayaboutEffect):
+		return True
+	else:
+		return False
+	
 
-def writePage(URL,CHECK,PAGE):
-	f = open(CHECK+URL,'w')
+def writePage(URL,EXT,PAGE):
+	f = open(URL[-7:]+EXT,'w')
 	f.write(PAGE)
 	f.close()
 
@@ -47,17 +57,18 @@ def checkAllPages():
 			print e
 	return 0
 
-#def main():
-#	for i in range (0,3000000):
-#		try:
-#			urlPartie = "http://www.boiteajeux.net/jeux/agr/partie.php?id="+str(i)
-#			urlHistorique = "http://www.boiteajeux.net/jeux/agr/historique.php?id="+str(i)
-#			for url in [urlPartie, urlHistorique]:
-#				page = getPage(url)
-#				check = checkPage(page)
-#				writePage(url,check,page)
-#		except (Exception e):
-#			print i,e
+def main(argv):
+	i = argv[1]
+	try:
+		urlPartie = "http://www.boiteajeux.net/jeux/agr/partie.php?id="+str(i)
+		urlHistorique = "http://www.boiteajeux.net/jeux/agr/historique.php?id="+str(i)
+		pageGame = getPage(urlPartie)
+		pageHistory = getPage(urlHistorique)
+		if checkIfGameIsDone(pageGame,pageHistory):
+			writePage(urlPartie,"-game.html",pageGame)
+			writePage(urlHistorique,"-history.html",pageHistory)
+	except Exception as e:
+		print i,e
 
-#if __name__ == "__main__":
-checkAllPages()
+if __name__ == "__main__":
+	main(sys.argv)
