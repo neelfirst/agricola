@@ -58,7 +58,7 @@ def checkAllPages():
 	return 0
 
 def main(argv):
-	for i in np.arange(850000,2400000,1):
+	for i in np.arange(680000,2400000,1):
 		try:
 			urlPartie = "http://www.boiteajeux.net/jeux/agr/partie.php?id="+str(i)
 			urlHistorique = "http://www.boiteajeux.net/jeux/agr/historique.php?id="+str(i)
