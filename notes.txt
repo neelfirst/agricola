@@ -76,6 +76,34 @@ fields follow a fixed eastern wing pattern, with the sixth field contesting with
 
 but is this the right way to go? do we effectively want to force the computer to build fences only once? that is a heuristic application as well...
 
+------------------------intermediate
+
+roll in game board resource counts into bool list of "available actions"
+
+i.e. enumerate "sp+1f" "sp+2f" ... "sp+14f" as 14 separate actions
+for the 10 resource accumulation spaces this becomes 14+14+14+14+14+14+10+5+7+5 = 111 new actions (101 net new actions)
+total action list would then be 12+14+101 = 127
+a boolean list of available actions is effectively a state
+can do a dynamic q-table with 127 bits for game state, but harder to codify player state
+
+what about "4 fences" ... "15 fences" or "1 stable" ... "4 stables" or "1 room" ... "3 rooms" or fireplace/cooking hearth/etc
+maybe don't need to code player state - just set valid actions based on player's existing resources - would work for build room / majors / etc
+makes it a little weird though - an agent would not be able to choose "8 wood" based on its current wood stash
+don't we take wood when we don't have any - i guess we take it when we perceive a need for it (build a room, fences)
+maybe if i have two rooms wood is a priority, if i haven't built any fences, but if i have then it is not a priority
+so codify player state by {num_rooms, fences_remaining, stables_remaining, fields (same discussion for grain/veg/plow/sow)...}
+
+when you glance at a player's board, how do you judge how well they are doing - basically the "scorecard"
+- player count
+- room count, type
+- fields, grain, veg
+- pastures, stables
+- sheep, boar, cow
+- unused spaces
+
+from this you can determine eligibility for family growth, sow/bake, storing animals, equivalent food
+you cannot determine eligibility for build room, build stable, build fences... so you need building resources as well
+
 ------------------------11/20/2016
 
 no real progress in a while: need to simplify approach
@@ -84,6 +112,7 @@ no real progress in a while: need to simplify approach
 3) then plug in an agent with a dynamic Q-table
 
 - this forces us to build the game infrastructure that an agent can meaningfully interact with
+- mostly stuck on how to represent player state in the state space: 127+ bit game state is acceptable, but nothing so far for players
 
 environment
 - game board
@@ -98,36 +127,45 @@ environment
 	- fences / stables
 - action history
 
-struct actionId {
+struct Action {
 	uint8_t round;
 	uint8_t move_number;
 	uint8_t action_code;
 };
 
-struct resource {
+struct Resource {
 	uint8_t wood, clay, reed, stone, sheep, boar, cow, grain, veg, food;
 };
 
-class env {
-	public:
-		common game_board;
-		player player_board;
-		list <actionId> history;
+struct Farm {
+	uint8_t squares[3][5]; // enumerate {empty, w/c/s room, field, unf stable, pasture, p+stable}
+	int8_t lines[4][6]; // enumerate {illegal, empty, fence}
 };
 
-class common {
+class Env {
+	public:
+		Common game_board;
+		Player player_board;
+		list <Action> history;
+};
+
+class Common {
 	public:
 		uint8_t round;
 		bool is_harvest;
-		list actions[26]; // 100?
+		list actions[26]; // 127?
 		list resources[10]; // roll in?
 	private:
-		void update(actionId);
+		void update(Action); // executes after valid move
 };
 
-class player {
+class Player {
 	public:
-		resource resources;
+		Resource resources;
+		Farm farm_board;
 		uint8_t fences, stables; // finite
 		uint8_t peoples; // 2-5
+		int8_t score; // starts negative!
+	private:
+		int8_t move(Action); // validity checks
 };
