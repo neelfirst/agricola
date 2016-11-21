@@ -1,0 +1,133 @@
+----------------------9/23/2016
+
+Q-table for SFG (Solo Family Game) Agricola
+
+state/action table
+
+State includes harvest countdown clock, revealed action spaces with available resources
+Action includes all available action spaces
+
+States run the risk of being interminable...
+- 12 permanent spaces + 14 revealed spaces = 26 spaces
+- accumulating spaces can have a variable number of resources on them
+- order of actions is important, so turn count is a variable
+- harvest countdown clock or something of that nature is essential
+- the player's board state
+- the player's resource count
+
+Real players use heuristics to narrow the number of states to consider...
+this should be the comparative aspect of the study - brute force RL vs heuristic RL - compare speed/performance
+
+State set: game state + player state
+player state = board state + resource state
+game state = available spaces + resources on spaces
+
+available spaces - basically 26-bit binary, unless we get smart about actions affecting available spaces
+resources on spaces - wood (14), clay (14), reed (14), fish (14), sp+food (14), stone (10), stone (5), sheep (14), boar (7), cow (5). 14^6 x 10 x 5 x 7 x 5 (13 billion)
+resource state - wood, clay, reed, stone, sheep, boar, cow, food, grain, veggies. see above for ROM
+board state - rooms, fields, fence configurations - this would be hard, but actually the smallest brute force state set
+
+Q-table approach is infeasible with this many states. it would really just take forever.
+
+so 3 problems to solve
+1. how to efficiently code available spaces
+2. how to efficiently code board state
+3. how to efficiently code resource states
+
+-----------------------9/24/2016
+
+game spaces can be reduced to 32 states, but still unclear how actions affect available spaces
+round 1: 4 possibilities (4C1)
+round 2: 6 possibilities (4C2)
+round 3: 4 possibilities (4C3)
+round 4: 1 possibility
+r-5-6-7: 3-3-1
+r-8-9-10-11-12-13-14: 2-1-2-1-2-1-1
+
+these are summed to 32, not multiplied, since looking backward there is only one state
+still need to encode actions efficiently - since order matters, we are looking at SUM[(12+r)Pn] where r is round # and n is number of actions
+perhaps we can encode 'dependent actions' - those that require other actions to take before becoming available
+can we just say "current round - you cannot choose your previous action/s"? to avoid the tuple permutation scenario?
+perhaps another state variable containing the set of closed actions that is not part of the Q-table
+(in a multiagent scenario, if a desirable action keeps being taken, we can add it to the value of the action, thus learning from others what is valuable)
+so now the action set is 26 and the available space set is 32, and we have a static set (cleared every Round) containing invalid actions (that do not incur penalties)
+
+-----------------------9/24/2016
+
+the player board is a 3x5 grid, with two spaces fixed as rooms
+rooms can only be built next to other rooms, fields can start anywhere but also must be adjacent, same with pastures, stables can go anywhere
+a space on the player board can have 5-6 states
+1 - unused | 2 - room (wood/clay/stone) | 3 - field (clear/grain/veggie) | 4 - unfenced stable | 5 - pastured | 6 - pastured and stabled
+it's probably best to just dynamically provide valid moves on player board as they come up
+so when field 1 is built - can choose from any of the 13 available spaces, but when field 2 is built, only 2-4 choices
+still, how many player board configurations can there be - throughout the course of a game? - quite a lot
+
+choosing configurations (and major improvements for that matter) add to the action list!
+
+rooms - * indicates preferred orientations
+2 rooms - 1 configuration
+3 rooms - 3 configurations (line*, L*, half-T*)
+4 rooms - 5 configurations (tall L*, long L, long-half-T, box*, side-T)
+5 rooms - 5 configurations (C, L*, box-stub*, T, long-half-T, long-L)
+
+we can apply heuristics here to reduce the state space, since it's family game and doesn't really matter
+2 rooms - 1 config | 3 rooms - 1 (line) config | 4 rooms - 1 (L) config | 5 rooms - 1 (LL) config
+fields follow a fixed eastern wing pattern, with the sixth field contesting with pastures
+
+but is this the right way to go? do we effectively want to force the computer to build fences only once? that is a heuristic application as well...
+
+------------------------11/20/2016
+
+no real progress in a while: need to simplify approach
+1) build a tool to play solo family agricola
+2) play it manually, check for bugs
+3) then plug in an agent with a dynamic Q-table
+
+- this forces us to build the game infrastructure that an agent can meaningfully interact with
+
+environment
+- game board
+	- round #
+	- available actions
+	- # resources
+- player board
+	- encode squares and lines
+- player resources
+	- the big 10
+	- # players
+	- fences / stables
+- action history
+
+struct actionId {
+	uint8_t round;
+	uint8_t move_number;
+	uint8_t action_code;
+};
+
+struct resource {
+	uint8_t wood, clay, reed, stone, sheep, boar, cow, grain, veg, food;
+};
+
+class env {
+	public:
+		common game_board;
+		player player_board;
+		list <actionId> history;
+};
+
+class common {
+	public:
+		uint8_t round;
+		bool is_harvest;
+		list actions[26]; // 100?
+		list resources[10]; // roll in?
+	private:
+		void update(actionId);
+};
+
+class player {
+	public:
+		resource resources;
+		uint8_t fences, stables; // finite
+		uint8_t peoples; // 2-5
+};
