@@ -144,12 +144,12 @@ struct Farm {
 
 class Env {
 	public:
-		Common game_board;
+		Game game_board;
 		Player player_board;
 		list <Action> history;
 };
 
-class Common {
+class Game {
 	public:
 		uint8_t round;
 		bool is_harvest;
