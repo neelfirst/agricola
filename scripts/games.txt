@@ -1,0 +1,11 @@
+131859 IncompleteRead(1563 bytes read, 6623 more expected)
+162537 IncompleteRead(1423 bytes read, 6769 more expected)
+171404 HTTP Error 500: Internal Server Error
+valid game i =  263887
+297680 HTTP Error 503: Service Unavailable
+322938 HTTP Error 503: Service Unavailable
+326873 IncompleteRead(657 bytes read)
+326951 ''
+551327 HTTP Error 503: Service Unavailable
+697275 [Errno 110] Connection timed out
+checkpoint i =  850000
