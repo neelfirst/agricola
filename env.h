@@ -1,6 +1,7 @@
 #ifndef __BAH_ENV_H
 #define __BAH_ENV_H
 
+#include "common.h"
 #include "game.h"
 #include "player.h"
 
