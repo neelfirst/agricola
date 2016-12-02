@@ -1,49 +1,61 @@
 #ifndef __BAH_COMMON_H
 #define __BAH_COMMON_H
 
-// define action codes
+enum Round {
+	INVALID = -1,
+	ROUND_0 = 0,
+	ROUND_1 = 1,
+	ROUND_2 = 2,
+	ROUND_3 = 3,
+	ROUND_4 = 4,
+	HARVEST_1 = 5,
+	ROUND_5 = 6,
+	ROUND_6 = 7,
+	ROUND_7 = 8,
+	HARVEST_2 = 9,
+	ROUND_8 = 10,
+	ROUND_9 = 11,
+	HARVEST_3 = 12,
+	ROUND_10 = 13,
+	ROUND_11 = 14,
+	HARVEST_4 = 15,
+	ROUND_12 = 16,
+	ROUND_13 = 17,
+	HARVEST_5 = 18,
+	ROUND_14 = 19,
+	HARVEST_6 = 20,
+	END_GAME = 21,
+};
 
-#define UNAVAILABLE 0
-#define ROOM_STABLE 1
-#define SP_FOOD_1 2
-#define SP_FOOD_2 3
-//...
-#define GRAIN 16
-#define PLOW 17
-#define STABLES 18
-#define DAY_LABORER 19
-#define WOOD_2 20
-//...
-#define CLAY_1 34
-//...
-#define REED_1 48
-//...
-#define FISH_1 62
-//...
-#define SHEEP_1 76
-//...
-#define FENCES 90
-#define SOW_BAKE 91
-#define IMPROVEMENT 92
-#define STONE_1 93 // multiple items in the action list can be STONE_1
-//...
-#define FGMI 103
-#define RENOVATE_IMP 104
-#define BOAR_1 105
-//...
-#define VEGGIE 112
-#define CATTLE_1 113
-#define CATTLE_2 114
-#define CATTLE_3 115
-#define CATTLE_4 116
-#define CATTLE_5 117
-#define FGWR 118
-#define PLOW_SOW 119
-#define RENOVATE_FENCE 120
+enum MajorImprovements {
+	FIREPLACE_2,
+	FIREPLACE_3,
+	COOKINGHEARTH_4,
+	COOKINGHEARTH_5,
+	WELL,
+	CLAY_OVEN,
+	STONE_OVEN,
+	JOINERY,
+	POTTERY,
+	BASKETMAKERS,
+};
 
-struct Action {
+
+struct Resource {
+	uint8_t wood, clay, reed, stone, sheep, boar, cattle, grain, veggie, food;
+	Resource();
+};
+
+Resource::Resource() {
+	wood = 0; clay = 0; reed = 0; stone = 0;
+	sheep = 0; boar = 0; cattle = 0;
+	grain = 0; veggie = 0; food = 0;
+}
+
+struct ActionData {
 	uint8_t round;
-	uint8_t move_number;
+	uint8_t count;
+	uint8_t max_count;
 	uint8_t action_code;
 };
 

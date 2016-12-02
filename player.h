@@ -4,19 +4,15 @@
 #include "common.h"
 
 // Farm square states
-enum {EMPTY, ROOM_W, ROOM_C, ROOM_S, 
+enum FarmSquareState {EMPTY, ROOM_W, ROOM_C, ROOM_S, 
 		FIELD, FIELD_1G, FIELD_2G, FIELD_3G, FIELD_1V, FIELD_2V, 
 		STABLE, PASTURE, PASTABLE};
 // Farm fence states
-enum {ILLEGAL, EMPTY, FENCE}; // Farm fence states
+enum FarmFenceState {ILLEGAL, EMPTY, FENCE}; // Farm fence states
 
 struct Farm {
 	uint8_t squares[3][5]; // enumerate {empty, w/c/s room, field, unf stable, pasture, p+stable}
 	int8_t lines[4][6]; // enumerate {illegal, empty, fence}
-};
-
-struct Resource {
-	uint8_t wood, clay, reed, stone, sheep, boar, cow, grain, veg, food;
 };
 
 class Player {

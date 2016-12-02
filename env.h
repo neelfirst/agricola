@@ -4,12 +4,13 @@
 #include "common.h"
 #include "game.h"
 #include "player.h"
+#include <vector> // std::vector
 
 class Env {
 	public:
 		Game game_board;
 		Player player_board;
-		list <Action> history;
+		std::vector<Action> history;
 };
 
 #endif
