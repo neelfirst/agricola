@@ -169,3 +169,67 @@ class Player {
 	private:
 		int8_t move(Action); // validity checks
 };
+
+-----------------------11/29/2016
+
+state machine approach for GAME class
+not necessarily appropriate for PLAYER and AGENT
+
+3 classes, GAME (game board), PLAYER (player resources and farm board), AGENT (decision maker)
+
+GAME states: r1->r2->...->r14->h6
+GAME events: receive 'action' from AGENT
+GAME actions: change chosen 'action' to unavailable, return
+			  if 'action' is 'last_action' then move to next state
+
+should GAME check for 'last_action' or trust AGENT/PLAYER?
+ok question answered (don't trust, demand action count and max action count)
+
+AGENT state: present current information, accept input
+AGENT event: collect input as 'action'
+AGENT action: send 'action' to GAME and PLAYER
+single circular state representation 
+
+PLAYER state: hold current information
+PLAYER event: receive 'action' from GAME<--AGENT
+PLAYER action: update farm board and resource stack by interpreting 'action'
+not really going to be a state machine
+but Farm and Resource structs should probably have separate update mechanism
+
+future planning: cards processing should happen in GAME
+PLAYER should just declare what cards are in play and let GAME sort out what happens
+common class or struct and corresponding database "cards"
+
+--------------------------- 12/1/2016
+
+what does the round/action data structure need to serve
+1) given an action, determine if it is available
+2) given a state, present available actions
+
+game states are r1...r14 plus move #
+r# gives you action set, move # (or prior moves) give you unavailability
+
+what if the structure looked like
+"action" --> free/taken/unavailable
+right now it is
+"round" --> available/unavailable
+
+we don't really care what round a given action is in once it is available
+if needed for cards we can store a vector with index [round] for actions
+however the "action" method would probably need to enumerate all wood_# for example
+and that gets messy with N players with cards where the space could have weird shit on it
+
+how about a "space" with a "round" code, nominal "action", and "resource" struct
+
+struct Game::Space {
+	status = enum {LOCKED, OCCUPIED, OPEN}
+	action = enum {0-6+10+14 base actions}
+	Resource resources;
+	when LOCKED->OPEN move resources to player;
+	when OPEN->OCCUPIED move resources to player;
+}
+
+ok that solves the 'mess' still doesn't address the original question
+but i guess now 'action' only needs to enumerate base actions
+or we just send a vector of spaces back and forth that have actions and availability
+but they don't have round number... is this needed, let's just put it in for now
