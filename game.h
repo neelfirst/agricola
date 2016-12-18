@@ -1,5 +1,5 @@
 #ifndef __BAH_GAME_H
- __BAH_GAME_H
+#define __BAH_GAME_H
 
 #include "common.h"
 #include <unordered_map>
@@ -15,8 +15,10 @@ class Game {
 			GRAIN,
 			PLOW,
 			STABLES,
+			OCCUPATION,
 			DAY_LABORER,
 			WOOD_2,
+			WOOD_3,
 			CLAY_1,
 			REED_1,
 			FISH_1,
@@ -33,14 +35,26 @@ class Game {
 			FGWR,
 			PLOW_SOW,
 			RENOVATE_FENCE,
-			// future - add other spots
-		}
+			CLAY_2,
+			CLAY_3,
+			WOOD_1,
+			WOOD_4,
+			OCCUPATION3,
+			OCCUPATION4,
+			OCC4_R5FG,
+			ANY1,
+			RSF,
+			RSW,
+			TRAVEL_1,
+			BUILD_TRAVEL,
+			MULTI_ANIMAL,
+		};
 
 		struct Space {
 			UseState status;
 			Action action;
 			Resource resources;
-			Space(SpaceState, Action);
+			Space(UseState, Action);
 		};
 
 		// just an idea for Major implementation
@@ -51,16 +65,24 @@ class Game {
 			Resource cost;
 			UseState status;
 			std::string name;
+			MajorImprovement mcode;
+			uint8_t points;
 			Major(MajorImprovement);
 		};
+
+		Game(uint8_t, bool); // player_count, is_family_game
+		bool start(); // deals cards, 10-7/drafts? and moves to round 1
+		bool update(Action); // executes after valid move
+		void unlock(Space &); // changes Space UseState from LOCKED-->OPEN
+	private:
+		uint8_t player_count;
+		bool is_family_game;
+		uint8_t current_round; // index to rounds vector
+		std::list<Player> players;
 
 		std::vector<Major> improvements;
 		std::vector<std::string> rounds; // vector of round/harvest strings, rounds match action map
 		std::unordered_map<std::string, Space> action_set; // round-based current action list
-
-		Game();
-	private:
-		bool update(Action); // executes after valid move
 };
 
 #endif

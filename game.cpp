@@ -6,6 +6,20 @@
 #include <algorithm> // std::random_shuffle
 #include <iostream> // std::cout, std::cerr
 
+std::string getName(uint8_t i) // fun little name bank
+{
+	switch (i)
+	{
+		case 1: return "Neel"; break;
+		case 2: return "Dave"; break;
+		case 3: return "Simon"; break;
+		case 4: return "Thomas"; break;
+		case 5: return "Rick"; break;
+		default: return "???"; break;
+	}
+	return "???"; break;
+}
+
 Game::Space::Space(Game::UseState s, Game::Action a)
 {
 	status = s; action = a;
@@ -13,8 +27,16 @@ Game::Space::Space(Game::UseState s, Game::Action a)
 	switch (action)
 	{
 		case SP_FOOD_1:	resources.food += 1;	break;
+		case WOOD_1:	resources.wood += 1;	break;
 		case WOOD_2:	resources.wood += 2;	break;
+		case WOOD_3:	resources.wood += 3;	break;
+		case WOOD_4:	resources.wood += 4;	break;
 		case CLAY_1:	resources.clay += 1;	break;
+		case CLAY_2:	resources.clay += 2;	break;
+		case CLAY_3:	resources.clay += 3;	break;
+		case RSW:		resources.reed += 1;	break;
+		case TRAVEL_1:	resources.food += 1;	break;
+		case BUILD_TRAVEL: resources.food += 1;	break;
 		case REED_1:	resources.reed += 1;	break;
 		case FISH_1:	resources.food += 1;	break;
 		case SHEEP_1:	resources.sheep += 1;	break;
@@ -35,76 +57,113 @@ Game::Major::Major(MajorImprovement m)
 		case FIREPLACE_2:
 			name = "Fireplace";
 			cost.clay += 2;
+			points = 1;
 			break;
 		case FIREPLACE_3:
 			name = "Fireplace";
 			cost.clay += 3;
+			points = 1;
 			break;
 		case COOKINGHEARTH_4:
 			name = "Cooking Hearth";
 			cost.clay += 4;
+			points = 1;
 			break;
 		case COOKINGHEARTH_5:
 			name = "Cooking Hearth";
 			cost.clay += 5;
+			points = 1;
 			break;
 		case WELL:
 			name = "Well";
 			cost.wood += 1;
 			cost.stone += 3;
+			points = 4;
 			break;
 		case CLAY_OVEN:
 			name = "Clay Oven";
 			cost.clay += 3;
 			cost.stone += 1;
+			points = 2;
 			break;
 		case STONE_OVEN:
 			name = "Stone Oven";
 			cost.clay += 1;
 			cost.stone += 3;
+			points = 3;
 			break;
 		case JOINERY:
 			name = "Joinery";
 			cost.wood += 2;
 			cost.stone += 2;
+			points = 2;
 			break;
 		case POTTERY:
 			name = "Pottery";
 			cost.clay += 2;
 			cost.stone += 2;
+			points = 2;
 			break;
 		case BASKETMAKERS:
 			name = "Basketmaker's Workshop";
 			cost.reed += 2;
 			cost.stone += 2;
+			points = 2;
 			break;
 		default: assert(false); break;
 	}
 }
 
-Game::Game(void)
+Game::Game(uint8_t p, bool f)
 {
+	player_count = p;
+	is_family_game = f;
+	current_round = 0;
 	std::srand(std::time(NULL));
+
 	/* 1. generate action set
 	 * std01-std10 are the standard 10 actions
 	 * available at the start of any game
 	 * round actions are selected randomly from
 	 * their respective stages */
-
-	/* later we will need to accept a constructor argument
-	 * for int players and bool family to set the other spaces */
-
 	action_set["std1"] = Space(OPEN, ROOM_STABLE);
 	action_set["std2"] = Space(OPEN, SP_FOOD_1);
 	action_set["std3"] = Space(OPEN, GRAIN);
 	action_set["std4"] = Space(OPEN, PLOW);
-	action_set["std5"] = Space(OPEN, STABLES);
+	if (is_family_game)	action_set["std5"] = Space(OPEN, STABLES);
+	else 				action_set["std5"] = Space(OPEN, OCCUPATION);
 	action_set["std6"] = Space(OPEN, DAY_LABORER);
-	action_set["std7"] = Space(OPEN, WOOD_2);
+	if (player_count == 1)	action_set["std7"] = Space(OPEN, WOOD_2);
+	else					action_set["std7"] = Space(OPEN, WOOD_3);
 	action_set["std8"] = Space(OPEN, CLAY_1);
 	action_set["std9"] = Space(OPEN, REED_1);
 	action_set["std10"] = Space(OPEN, FISH_1);
 	action_set["round14"] = Space(LOCKED, RENOVATE_FENCES);
+
+	if (player_count == 3) {
+		action_set["ext1"] = Space(OPEN, WOOD_2);
+		action_set["ext2"] = Space(OPEN, CLAY_1);
+		action_set["ext3"] = Space(OPEN, OCCUPATION3);
+		action_set["ext4"] = Space(OPEN, ANY1);
+		action_set["ext5"] = NULL;
+		action_set["ext6"] = NULL;
+	}
+	else if (player_count == 4) {
+		action_set["ext1"] = Space(OPEN, WOOD_2);
+		action_set["ext2"] = Space(OPEN, WOOD_1);
+		action_set["ext3"] = Space(OPEN, OCCUPATION4);
+		action_set["ext4"] = Space(OPEN, CLAY_2);
+		action_set["ext5"] = Space(OPEN, RSF);
+		action_set["ext6"] = Space(OPEN, TRAVELING_1);
+	}
+	else if (player_count == 5) {
+		action_set["ext1"] = Space(OPEN, WOOD_4);
+		action_set["ext2"] = Space(OPEN, CLAY_3);
+		action_set["ext3"] = Space(OPEN, RSW);
+		action_set["ext4"] = Space(OPEN, BUILD_TRAVELING_1);
+		action_set["ext5"] = Space(OPEN, OCC4_R5FG);
+		action_set["ext6"] = Space(OPEN, MULTI_ANIMAL);
+	}
 
 	std::vector<Space> stage1;
 	stage1.push_back(Space(LOCKED, SHEEP_1));
@@ -122,9 +181,9 @@ Game::Game(void)
 	stage2.push_back(Space(LOCKED, RENOVATE_IMP));
 	stage2.push_back(Space(LOCKED, FGMI));
 	std::random_shuffle(stage2.begin(), stage2.end());
-	action_set["round5"] = stage1[0];
-	action_set["round6"] = stage1[1];
-	action_set["round7"] = stage1[2];
+	action_set["round5"] = stage2[0];
+	action_set["round6"] = stage2[1];
+	action_set["round7"] = stage2[2];
 
 	std::vector<Space> stage3;
 	stage3.push_back(Space(LOCKED, BOAR_1));
@@ -184,9 +243,13 @@ Game::Game(void)
 	improvements.push_back(Major(POTTERY));
 	improvements.push_back(Major(BASKETMAKERS));
 
+	/* 4. initialize Player list
+	 * no point in randomizing */
+	for (int i = 0; i < player_count; i++)
+		players.push_back(Player(i, getName(i)));
 }
 
-Game::update(Action a)
+bool Game::update(Action a)
 {
 	// outright invalid action checks
 	if (a.round < 0 || a.round > 21) {
@@ -214,3 +277,20 @@ Game::update(Action a)
 	// else if last_action move (immediately?) to next round
 	// if round == 4/7/9/11/13/14 move to harvest
 }
+
+bool Game::start()
+{
+	if (current_round != 0)
+	{
+		std::cout << "Error: Game::start called while current_round != 0" << std::endl;
+		return false;
+	}
+	if (!is_family_game)
+	{
+		// deal with cards
+	}
+	current_round = 1;
+	return true;
+}
+
+void Game::unlock (Space &space) { space.status = OPEN; }

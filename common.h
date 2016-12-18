@@ -27,7 +27,7 @@ enum Round {
 	END_GAME = 21,
 };
 
-enum MajorImprovements {
+enum MajorImprovement {
 	FIREPLACE_2,
 	FIREPLACE_3,
 	COOKINGHEARTH_4,
@@ -39,7 +39,6 @@ enum MajorImprovements {
 	POTTERY,
 	BASKETMAKERS,
 };
-
 
 struct Resource {
 	uint8_t wood, clay, reed, stone, sheep, boar, cattle, grain, veggie, food;

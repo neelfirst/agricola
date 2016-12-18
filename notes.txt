@@ -233,3 +233,72 @@ ok that solves the 'mess' still doesn't address the original question
 but i guess now 'action' only needs to enumerate base actions
 or we just send a vector of spaces back and forth that have actions and availability
 but they don't have round number... is this needed, let's just put it in for now
+
+---------------------------- 12/3/16
+
+decision: Game will own a std::list<Player>
+so Player is a subclass of Game, no need for Players to exist outside Game
+Game::Game() will create list Players during construction
+Game responsible for re-ordering players when SP taken
+
+---------------------------- 12/13/16
+
+what if we created Q-tables per... round? or stage?
+we are creating q-tables per setup (n_players*is_family) anyways
+
+would need some way to link the tables to apply final score trickle down
+or 
+develop some metric to evaluate your position at the end of each stage
+
+this is really the same as "sectioning" a single Q-table
+
+OK so final game state representation:
+- n_players*is_family
+- round number, move number, total moves this round
+- game board resource accumulation (need an overarching struct)
+- player resources, player board (ugh)
+
+the columns/actions of a Q-table would be fixed at 24-30, the base action set
+accumulation information is part of the game state
+if you pick an action that is unavailable game.update just bounces you back (need to avoid inf loop)
+this is kind of what humans do... "ahh why did you take 2 stone"
+
+we can't really boil player resources down very far (room equivalents?) what about player board
+- room type and #
+- field type (empty, n_grain, n_veg) and #
+- pasture sizes and #
+- stable locations
+
+struct AbstractFarm
+{
+	list<Room{int n, int type}> rooms
+	list<Field{int n_grain, int n_veg}> fields
+	list<Pasture{int size} pastures
+	list<Stable{bool fenced} stables
+}
+
+revise
+
+struct AbstractFarm
+{
+	int rooms, enum room_type
+	int empty_fields, sown_fields, n_grain, n_veg
+	int n_pastures, int net_size
+	int fenced_stables, unfenced_stables
+}
+
+revise
+
+struct AbstractFarm
+{
+	int rooms, enum type
+	int animal_capacity // if animal capacity low, build fences, if high, take animals
+	int sowing_capacity // if sowing capacity high, sow, if low, plow
+	int n_grain, n_veg // needed for end-game scoring
+}
+
+how to compare performance degradation from abstraction <-- would be a good topical question
+then we could just implement heuristics for everything else, reduce q-table computation demands
+that is what we're doing, but don't we need a brute force first?
+
+let the struct abstraction happen in agent. this is just a game.
