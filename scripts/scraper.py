@@ -15,19 +15,12 @@ def getPage(URL):
 	return page
 
 def checkIfGameIsDone(GAME,HISTORY):
-#	print HISTORY
 	isGameOver = "- GAME OVER -" in GAME
 	hasGivenUp = "gives up!" in HISTORY
 	hasLayaboutEffect = "\"Layabout\" effect" in HISTORY
 	isRound14 = "<td class=\"clHisto\" style=\"text-align:center;vertical-align:middle;font-weight:bold;color:red\">14</td>" in HISTORY
 	numPlayers = HISTORY.count("</div>&nbsp")
 	numFeedings = HISTORY.count("feeding")
-#	print "isGameOver = ",isGameOver
-#	print "hasGivenUp = ",hasGivenUp
-#	print "isRound14 = ",isRound14
-#	print "numPlayers*6 = ",numPlayers*6
-#	print "numFeedings+hasLayaboutEffect = ",numFeedings+hasLayaboutEffect
-#	print "hasLayaboutEffect = ",hasLayaboutEffect
 	if (isRound14 and isGameOver and numPlayers*6 == numFeedings+hasLayaboutEffect):
 		return True
 	else:
@@ -38,24 +31,6 @@ def writePage(URL,EXT,PAGE):
 	f = open(URL[-7:]+EXT,'w')
 	f.write(PAGE)
 	f.close()
-
-def checkAllPages():
-	for i in np.arange (1,2500000,1):
-		try:
-			urlHistorique = "http://www.boiteajeux.net/jeux/agr/historique.php?id="+str(i)
-			request = urllib.request.Request(urlHistorique)
-			response = urllib.request.urlopen(request)
-			page = response.read()
-			soup = BeautifulSoup(page,"lxml")
-			if (len(str(soup.body)) >= 2000):
-				print(i)
-#			else:
-#				print urlHistorique
-#				print len(str(soup.body))
-#				break
-		except Exception as e:
-			print(e)
-	return 0
 
 def main(argv):
 	for i in np.arange(850000,2400000,1):
