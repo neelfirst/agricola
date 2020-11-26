@@ -1,15 +1,15 @@
 #!/usr/bin/python
 
 import sys
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 from bs4 import BeautifulSoup
 import numpy as np
 
 def getPage(URL):
 	user_agent = 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_4; en-US) AppleWebKit/534.3 (KHTML, like Gecko) Chrome/6.0.472.63 Safari/534.3'
 	headers = { 'User-Agent' : user_agent }
-	req = urllib2.Request(URL, None, headers)
-	response = urllib2.urlopen(req)
+	req = urllib.request.Request(URL, None, headers)
+	response = urllib.request.urlopen(req)
 	page = response.read()
 	response.close()
 	return page
@@ -43,18 +43,18 @@ def checkAllPages():
 	for i in np.arange (1,2500000,1):
 		try:
 			urlHistorique = "http://www.boiteajeux.net/jeux/agr/historique.php?id="+str(i)
-			request = urllib2.Request(urlHistorique)
-			response = urllib2.urlopen(request)
+			request = urllib.request.Request(urlHistorique)
+			response = urllib.request.urlopen(request)
 			page = response.read()
 			soup = BeautifulSoup(page,"lxml")
 			if (len(str(soup.body)) >= 2000):
-				print i
+				print(i)
 #			else:
 #				print urlHistorique
 #				print len(str(soup.body))
 #				break
 		except Exception as e:
-			print e
+			print(e)
 	return 0
 
 def main(argv):
@@ -67,12 +67,12 @@ def main(argv):
 			if checkIfGameIsDone(pageGame,pageHistory):
 				writePage(urlPartie,"-game.html",pageGame)
 				writePage(urlHistorique,"-history.html",pageHistory)
-				print "valid game i = ",i
+				print("valid game i = ",i)
 		except Exception as e:
-			print i,e
+			print(i,e)
 			continue
 		if (i % 5000 == 0):
-			print "checkpoint i = ",i
+			print("checkpoint i = ",i)
 
 if __name__ == "__main__":
 	main(sys.argv)

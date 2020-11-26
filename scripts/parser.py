@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #history = BeautifulSoup(open("2022398-history.html"))
 
-import urllib2, os
+import urllib.request, urllib.error, urllib.parse, os
 from bs4 import BeautifulSoup
 
 def getBonus(bonus):
@@ -18,7 +18,7 @@ def getPlayer(NT,cols):
 'cards':int(cols[11]),'bonus':getBonus(cols[12]),'total':int(NT[1])}
 
 
-r = urllib2.urlopen("file://"+os.path.abspath("2022398-game.html"))
+r = urllib.request.urlopen("file://"+os.path.abspath("2022398-game.html"))
 game = r.read()
 numPlayers = game.count("</div>&nbsp")
 GAME = BeautifulSoup(game,'lxml')
