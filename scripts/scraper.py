@@ -2,11 +2,8 @@
 
 import sys
 import requests
+import argparse
 from bs4 import BeautifulSoup
-
-START = 3525005
-STOP = 3525006
-STEP = 1
 
 def getPage(url):
     r = requests.get(url)
@@ -27,7 +24,12 @@ def writePage(url,ext,page):
     f.close()
 
 def main(argv):
-    for i in range(START,STOP,STEP):
+    parser = argparse.ArgumentParser(description='scrape boiteajeux.net for agricola games')
+    parser.add_argument('start', type=int, help='start game')
+    parser.add_argument('stop', type=int, help='stop game')
+    parser.add_argument('step', type=int, help='step game')
+    args = parser.parse_args()
+    for i in range(args.start, args.stop, args.step):
         try:
   #          partie = "http://www.boiteajeux.net/jeux/agr/partie.php?id="+str(i)
             historique = "http://www.boiteajeux.net/jeux/agr/historique.php?id="+str(i)
