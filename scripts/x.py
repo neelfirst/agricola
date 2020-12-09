@@ -20,5 +20,5 @@ def clear_history():
       if (text.count("</div>&nbsp") != 1):
         os.remove(file.path)
 
+clear_history()
 clear_games()
-# clear_history()
