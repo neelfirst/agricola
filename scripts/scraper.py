@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import time
 import sys
 import requests
 import argparse
@@ -18,10 +19,9 @@ def checkIfGameIsDone(history):
     else:
         return False
 
-def writePage(url,ext,page):
-    f = open(url[-7:]+ext,'w')
-    f.write(page)
-    f.close()
+def writePage(i,ext,page):
+    with open(f'{i:07}'+ext,'w') as file:
+        file.write(page)
 
 def main(argv):
     parser = argparse.ArgumentParser(description='scrape boiteajeux.net for agricola games')
@@ -31,19 +31,20 @@ def main(argv):
     args = parser.parse_args()
     for i in range(args.start, args.stop, args.step):
         try:
-  #          partie = "http://www.boiteajeux.net/jeux/agr/partie.php?id="+str(i)
             historique = "http://www.boiteajeux.net/jeux/agr/historique.php?id="+str(i)
-  #          game = getPage(partie)
             history = getPage(historique)
             if checkIfGameIsDone(history):
-  #              writePage(partie,"-game.html",game)
-                writePage(historique,"-history.html",history)
+                partie = "http://www.boiteajeux.net/jeux/agr/partie.php?id="+str(i)
+                game = getPage(partie)
+                writePage(i,"-game.html",game)
+                writePage(i,"-history.html",history)
                 print("valid game i = ",i)
         except Exception as e:
             print(i,e)
             continue
-        if (i % 5000 == 0):
-            print("checkpoint i = ",i)
+#        if (i % 5000 == 0):
+        print("checkpoint i = ",i)
+        time.sleep(1)
 
 if __name__ == "__main__":
     main(sys.argv)
